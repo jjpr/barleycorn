@@ -18,3 +18,15 @@ class boolIntersection(Operator):
 class boolSubtraction(Operator):
   pass
 
+class bU(Compound):
+  def __init__(self, first, second):
+    Compound.__init__(self, boolUnion(), [first, second])
+    
+class bI(Compound):
+  def __init__(self, first, second):
+    Compound.__init__(self, boolIntersection(), [first, second])
+    
+class bS(Compound):
+  def __init__(self, first, second):
+    Compound.__init__(self, boolSubtraction(), [first, second])
+    
