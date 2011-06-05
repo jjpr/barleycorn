@@ -18,12 +18,6 @@ class ForToolkitFreeCAD(barleycorn.ForToolkit):
         self.resolveCompound()
       else:
         raise Exception("can't resolve type")
-      if self.component.location != None:
-        if isinstance(self.component.location, tuple) and len(self.component.location)==3:
-          self.partrep.translate(Base.Vector(self.component.location[0],self.component.location[1],
-          self.component.location[2]))
-        else:
-          raise Exception("can't handle location")
       if self.component.rotation != None:
         if isinstance(self.component.rotation, barleycorn.simpleRotation):
           self.partrep.rotate(
@@ -32,6 +26,12 @@ class ForToolkitFreeCAD(barleycorn.ForToolkit):
           self.component.rotation.angle)
         else:
           raise Exception("can't handle rotation")
+      if self.component.location != None:
+        if isinstance(self.component.location, tuple) and len(self.component.location)==3:
+          self.partrep.translate(Base.Vector(self.component.location[0],self.component.location[1],
+          self.component.location[2]))
+        else:
+          raise Exception("can't handle location")
       self.resolved = True
       return self
   
@@ -45,7 +45,8 @@ class ForToolkitFreeCAD(barleycorn.ForToolkit):
     elif isinstance(self.component, primitives.Torus):
       self.partrep = Part.makeTorus(self.component.radiusMajor, self.component.radiusMinor)
     elif isinstance(self.component, primitives.Wedge):
-      self.partrep = Part.makeCylinder(self.component.radius, self.component.height, self.component.angle)
+      self.partrep = Part.makeCylinder(self.component.radius, self.component.height, 
+      Base.Vector(0,0,0), Base.Vector(0,0,1), self.component.angle)
     elif isinstance(self.component, primitives.Sphere):
       self.partrep = Part.makeSphere(self.component.radius)
     else:
