@@ -3,6 +3,8 @@ from barleycorn import primitives
 from barleycorn import compounds
 from FreeCAD import Part
 from FreeCAD import Base
+import datetime
+import os
 
 class ForToolkitFreeCAD(barleycorn.ForToolkit):
   def __init__(self, component, toolkit):
@@ -33,7 +35,7 @@ class ForToolkitFreeCAD(barleycorn.ForToolkit):
         else:
           raise Exception("can't handle location")
       self.resolved = True
-      return self
+    return self
   
   def resolvePrimitive(self):
     if isinstance(self.component, primitives.Cone):
@@ -70,10 +72,24 @@ class ToolkitFreeCAD(barleycorn.Toolkit):
   def __init__(self):
     barleycorn.Toolkit.__init__(self, "FreeCAD 0.11")
   
-  def makeItSo(self, component):
-    if not self in component.forToolkits:
-      component.forToolkits[self] = ForToolkitFreeCAD(component, self)
-    topftk = component.forToolkits[self].resolve()
-    Part.show(topftk.partrep)
-    return component
+  def makeItSo(self, components):
+    for component in components:
+      if not self in component.forToolkits:
+        component.forToolkits[self] = ForToolkitFreeCAD(component, self)
+      topftk = component.forToolkits[self].resolve()
+      Part.show(topftk.partrep)
+    return components
+    
+  def exportSTL(self, components, prefix):
+    dirName = datetime.datetime.now().isoformat()
+    dirPath = os.path.join(prefix, dirName)
+    os.mkdir(dirPath)
+    for i, component in enumerate(components):
+      if not self in component.forToolkits:
+        component.forToolkits[self] = ForToolkitFreeCAD(component, self)
+      topftk = component.forToolkits[self].resolve()
+      name = component.name
+      if name == None:
+        name = "component_"+str(i+1)
+      topftk.partrep.exportStl(os.path.join(dirPath, name+".stl"))
     
