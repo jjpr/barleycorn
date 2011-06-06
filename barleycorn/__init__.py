@@ -4,7 +4,7 @@ class Toolkit(object):
     self.supportedPrimitives = supportedPrimitives
     self.supportedOperations = supportedOperations
     
-  def makeItSo(self, component):
+  def makeItSo(self, components):
     pass
     
 class ForToolkit(object):
