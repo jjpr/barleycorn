@@ -4,6 +4,12 @@ class Primitive(Component):
   def __init__(self, name=None, type=None, location=None, rotation=None):
     Component.__init__(self, name, type, location, rotation)
     
+class Special(Primitive):
+  """a superclass for any shape that can be described in a particular toolkit 
+  but which is not supported by barleycorn.primitives"""
+  def __init__(self, name=None, type=None, location=None, rotation=None):
+    Primitive.__init__(self, name, type, location, rotation)
+    
 class Cone(Primitive):
   """a circular cone around the positive z axis with its apex at the origin"""
   def __init__(self, radius, height, name=None, type=None, location=None, rotation=None):
