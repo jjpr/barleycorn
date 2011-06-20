@@ -21,6 +21,7 @@ class Component(object):
     self.forToolkits = {}
 
 class simpleRotation(object):
+  """angle is in degrees for now"""
   def __init__(self, axisX, axisY, axisZ, angle, locX=0, locY=0, locZ=0):
     self.axisX = axisX
     self.axisY = axisY

@@ -19,7 +19,7 @@ class ForToolkitFreeCAD(barleycorn.ForToolkit):
       elif isinstance(self.component, compounds.Compound):
         self.resolveCompound()
       else:
-        raise Exception("can't resolve type")
+        raise Exception("can't resolve type: "+str(type(self.component)))
       if self.component.rotation != None:
         if isinstance(self.component.rotation, barleycorn.simpleRotation):
           self.partrep.rotate(
@@ -52,12 +52,15 @@ class ForToolkitFreeCAD(barleycorn.ForToolkit):
     elif isinstance(self.component, primitives.Sphere):
       self.partrep = Part.makeSphere(self.component.radius)
     else:
-      raise Exception("unrecognized primitive")
+      raise Exception("unrecognized primitive: "+str(type(self.component)))
     return self
       
   def resolveCompound(self):
-    first = ForToolkitFreeCAD(self.component.operands[0], self.toolkit).resolve()
-    second = ForToolkitFreeCAD(self.component.operands[1], self.toolkit).resolve()
+    for op in self.component.operands:
+      if not self.toolkit in op.forToolkits:
+        op.forToolkits[self.toolkit] = ForToolkitFreeCAD(op, self.toolkit)
+    first = self.component.operands[0].forToolkits[self.toolkit].resolve()
+    second = self.component.operands[1].forToolkits[self.toolkit].resolve()
     if isinstance(self.component.operator, compounds.boolUnion):
       self.partrep = first.partrep.fuse(second.partrep)
     elif isinstance(self.component.operator, compounds.boolIntersection):
