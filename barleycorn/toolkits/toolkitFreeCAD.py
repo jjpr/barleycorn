@@ -1,6 +1,7 @@
 import barleycorn
-from barleycorn import primitives
-from barleycorn import compounds
+from barleycorn.primitives import Primitive, Cone, Cylinder, Box, Torus, Wedge, Sphere, Special
+from barleycorn.compounds import Compound, boolUnion, boolIntersection, boolSubtraction
+import FreeCAD
 from FreeCAD import Part
 from FreeCAD import Base
 import datetime
@@ -14,9 +15,9 @@ class ForToolkitFreeCAD(barleycorn.ForToolkit):
     
   def resolve(self):
     if not self.resolved:
-      if isinstance(self.component, primitives.Primitive):
+      if isinstance(self.component, Primitive):
         self.resolvePrimitive()
-      elif isinstance(self.component, compounds.Compound):
+      elif isinstance(self.component, Compound):
         self.resolveCompound()
       else:
         raise Exception("can't resolve type: "+str(type(self.component)))
@@ -38,18 +39,18 @@ class ForToolkitFreeCAD(barleycorn.ForToolkit):
     return self
   
   def resolvePrimitive(self):
-    if isinstance(self.component, primitives.Cone):
+    if isinstance(self.component, Cone):
       self.partrep = Part.makeCone(0, self.component.radius, self.component.height)
-    elif isinstance(self.component, primitives.Cylinder):
+    elif isinstance(self.component, Cylinder):
       self.partrep = Part.makeCylinder(self.component.radius, self.component.height)
-    elif isinstance(self.component, primitives.Box):
+    elif isinstance(self.component, Box):
       self.partrep = Part.makeBox(self.component.dimX, self.component.dimY, self.component.dimZ)
-    elif isinstance(self.component, primitives.Torus):
+    elif isinstance(self.component, Torus):
       self.partrep = Part.makeTorus(self.component.radiusMajor, self.component.radiusMinor)
-    elif isinstance(self.component, primitives.Wedge):
+    elif isinstance(self.component, Wedge):
       self.partrep = Part.makeCylinder(self.component.radius, self.component.height, 
       Base.Vector(0,0,0), Base.Vector(0,0,1), self.component.angle)
-    elif isinstance(self.component, primitives.Sphere):
+    elif isinstance(self.component, Sphere):
       self.partrep = Part.makeSphere(self.component.radius)
     else:
       raise Exception("unrecognized primitive: "+str(type(self.component)))
@@ -61,11 +62,11 @@ class ForToolkitFreeCAD(barleycorn.ForToolkit):
         op.forToolkits[self.toolkit] = ForToolkitFreeCAD(op, self.toolkit)
     first = self.component.operands[0].forToolkits[self.toolkit].resolve()
     second = self.component.operands[1].forToolkits[self.toolkit].resolve()
-    if isinstance(self.component.operator, compounds.boolUnion):
+    if isinstance(self.component.operator, boolUnion):
       self.partrep = first.partrep.fuse(second.partrep)
-    elif isinstance(self.component.operator, compounds.boolIntersection):
+    elif isinstance(self.component.operator, boolIntersection):
       self.partrep = first.partrep.common(second.partrep)
-    elif isinstance(self.component.operator, compounds.boolSubtraction):
+    elif isinstance(self.component.operator, boolSubtraction):
       self.partrep = first.partrep.cut(second.partrep)
     else:
       raise Exception("unrecognized operator")
@@ -73,7 +74,8 @@ class ForToolkitFreeCAD(barleycorn.ForToolkit):
 
 class ToolkitFreeCAD(barleycorn.Toolkit):
   def __init__(self):
-    barleycorn.Toolkit.__init__(self, "FreeCAD 0.11")
+    self.App = FreeCAD
+    barleycorn.Toolkit.__init__(self, self.App.ConfigGet("ExeName")+" "+self.App.ConfigGet("ExeVersion"))
   
   def makeItSo(self, components):
     for component in components:
@@ -95,4 +97,27 @@ class ToolkitFreeCAD(barleycorn.Toolkit):
       if name == None:
         name = "component_"+str(i+1)
       topftk.partrep.exportStl(os.path.join(dirPath, name+".stl"))
+  
+  def clean(self):
+    for ob in self.App.ActiveDocument.Objects:
+      self.App.ActiveDocument.removeObject(ob.Name)
+      
+  def look(self):
+    self.App.Gui.SendMsgToActiveView("ViewFit")
+    self.App.Gui.activeDocument().activeView().viewAxometric()
     
+class SpecialFreeCAD(Special):
+  """a FreeCAD-specific implementation of primitives.Special"""
+  def __init__(self, toolkit, name=None, type=None, location=None, rotation=None):
+    Special.__init__(self, name, type, location, rotation)
+    if not isinstance(toolkit, ToolkitFreeCAD):
+      raise Exception("unrecognized toolkit: "+str(type(toolkit)))
+    if toolkit not in self.forToolkits:
+      self.forToolkits[toolkit] = ForToolkitFreeCAD(self, toolkit)
+    ftk = self.forToolkits[toolkit]
+    ftk.partrep = self.geometry()
+    ftk.resolved = True
+  
+  def geometry(self):
+    raise NotImplementedError()
+
