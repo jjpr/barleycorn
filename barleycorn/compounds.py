@@ -1,32 +1,24 @@
-from barleycorn import Component
+import barleycorn
 
-class Compound(Component):
-  def __init__(self, operator, operands, name=None, type=None, location=None, rotation=None):
-    Component.__init__(self, name, type, location, rotation)
-    self.operator = operator
-    self.operands = operands
-
-class Operator(object):
-  pass
+class Compound(barleycorn.Component):
+  def __init__(self, name=None, type=None):
+    barleycorn.Component.__init__(self, name, type)
   
-class boolUnion(Operator):
-  pass
+class Boolean(Compound):
+  def __init__(self, first, second, name=None, type=None):
+    Compound.__init__(self, name, type)
+    self.first = first
+    self.second = second
 
-class boolIntersection(Operator):
-  pass
+class BooleanUnion(Boolean):
+  def __init__(self, first, second, name=None, type=None):
+    Boolean.__init__(self, first, second, name, type)
 
-class boolSubtraction(Operator):
-  pass
+class BooleanIntersection(Boolean):
+  def __init__(self, first, second, name=None, type=None):
+    Boolean.__init__(self, first, second, name, type)
 
-class bU(Compound):
-  def __init__(self, first, second):
-    Compound.__init__(self, boolUnion(), [first, second])
-    
-class bI(Compound):
-  def __init__(self, first, second):
-    Compound.__init__(self, boolIntersection(), [first, second])
-    
-class bS(Compound):
-  def __init__(self, first, second):
-    Compound.__init__(self, boolSubtraction(), [first, second])
-    
+class BooleanSubtraction(Boolean):
+  def __init__(self, first, second, name=None, type=None):
+    Boolean.__init__(self, first, second, name, type)
+
