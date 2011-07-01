@@ -23,7 +23,9 @@ class ForToolkitFreeCAD(barleycorn.ForToolkit):
     
   def resolve(self):
     if not self.resolved:
-      if isinstance(self.component, barleycorn.Transformation):
+      if isinstance(self.component, barleycorn.Wrapper):
+        self.resolveWrapper()
+      elif isinstance(self.component, barleycorn.Transformation):
         self.resolveTransformation()
       elif isinstance(self.component, barleycorn.primitives.Primitive):
         self.resolvePrimitive()
@@ -33,6 +35,13 @@ class ForToolkitFreeCAD(barleycorn.ForToolkit):
         raise Exception("can't resolve type: "+str(type(self.component)))
       self.resolved = True
     return self
+  
+  def resolveWrapper(self):
+    self.partrep = self.component.component.getForToolkit(self.toolkit).resolve().partrep
+  
+  def resolveTransformation(self):
+    partrep = self.component.component.getForToolkit(self.toolkit).resolve().partrep
+    self.partrep = partrep.transformGeometry(self.makeMatrix(self.component.transformation))# makes a new copy of shape, not memory-efficient
   
   def resolvePrimitive(self):
     if isinstance(self.component, barleycorn.primitives.Cone):
@@ -67,10 +76,6 @@ class ForToolkitFreeCAD(barleycorn.ForToolkit):
     else:
       raise Exception("unrecognized operator")
     return self
-  
-  def resolveTransformation(self):
-    partrep = self.component.component.getForToolkit(self.toolkit).resolve().partrep
-    self.partrep = partrep.transformGeometry(self.makeMatrix(self.component.transformation))#ASSUMES that transformshape makes a new copy or that freecad allows reuse of shape
   
   def makeMatrix(self, transformation):
     """takes a cgkit.cgtypes.mat4, returns FreeCAD.Matrix"""

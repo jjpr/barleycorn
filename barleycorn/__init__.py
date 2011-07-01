@@ -84,8 +84,13 @@ class Transformation(Component):
       return result*self.transformation
     return result
 
+class Wrapper(Component):
+  def __init__(self, component, name=None, type=None):
+    Component.__init__(self, name, type)
+    self.component = component
 
-
+  def __getattr__(self, attrname):
+    return getattr(self.component, attrname)
 
 class simpleRotation(object):
   """angle is in degrees for now"""
