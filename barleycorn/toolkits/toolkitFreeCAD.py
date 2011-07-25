@@ -121,6 +121,6 @@ class SpecialFreeCAD(barleycorn.primitives.Special):
     ftk.partrep = self.geometry()
     ftk.resolved = True
   
-  def geometry(self):
+  def geometry(self): #this is where the FreCAD-specific code goes
     raise NotImplementedError()
 
