@@ -1,3 +1,4 @@
+import logging
 import barleycorn
 import barleycorn.primitives
 import barleycorn.compounds
@@ -6,6 +7,8 @@ from FreeCAD import Part
 from FreeCAD import Base
 import datetime
 import os
+
+logger = logging.getLogger(__name__)
 
 _toolkitFreeCAD = None
 
@@ -115,8 +118,8 @@ class ToolkitFreeCAD(barleycorn.Toolkit):
     
 class SpecialFreeCAD(barleycorn.primitives.Special):
   """a FreeCAD-specific implementation of primitives.Special"""
-  def __init__(self, toolkit, name=None, type=None):
-    barleycorn.primitives.Special.__init__(self, name, type)
+  def __init__(self, toolkit, **kwargs):
+    barleycorn.primitives.Special.__init__(self, **kwargs)
     ftk = self.getForToolkit(toolkit)
     ftk.partrep = self.geometry()
     ftk.resolved = True

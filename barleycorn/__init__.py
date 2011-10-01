@@ -1,4 +1,6 @@
 import cgkit.cgtypes
+import datetime
+# other imports at end to avoid circularity problems
 
 class Toolkit(object):
   """a Toolkit represents a particular application or library for 3D modeling, CAD, etc."""
@@ -20,9 +22,8 @@ class Component(object):
   a Component's forToolkits attribute is a dictionary mapping any Toolkit that operates
   on the Component to a ForToolkit object which holds information and code specific to the 
   relationship between the Toolkit and the Component"""
-  def __init__(self, name, type):
-    self.name = name
-    self.type = type
+  def __init__(self, **kwargs):
+    self.name = kwargs.get("name", self.__class__.__name__+"_"+str(datetime.datetime.now().microsecond))
     self.forToolkits = {}
     
   def getForToolkit(self, toolkit):
@@ -30,51 +31,51 @@ class Component(object):
       self.forToolkits[toolkit] = toolkit.forToolkitClass(self, toolkit)
     return self.forToolkits[toolkit]
   
-  def transform(self, transformation, name=None, type=None):
-    return Transformation(self, transformation, name, type)
+  def transform(self, transformation, **kwargs):
+    return Transformation(self, transformation, **kwargs)
 
-  def rotateX(self, angle, name=None, type=None):
+  def rotateX(self, angle, **kwargs):
     """angle is in radians"""
     trans = cgkit.cgtypes.mat4.rotation(angle, cgkit.cgtypes.vec3(1,0,0))
-    return self.transform(trans, name, type)
+    return self.transform(trans, **kwargs)
 
-  def rotateY(self, angle, name=None, type=None):
+  def rotateY(self, angle, **kwargs):
     """angle is in radians"""
     trans = cgkit.cgtypes.mat4.rotation(angle, cgkit.cgtypes.vec3(0,1,0))
-    return self.transform(trans, name, type)
+    return self.transform(trans, **kwargs)
 
-  def rotateZ(self, angle, name=None, type=None):
+  def rotateZ(self, angle, **kwargs):
     """angle is in radians"""
     trans = cgkit.cgtypes.mat4.rotation(angle, cgkit.cgtypes.vec3(0,0,1))
-    return self.transform(trans, name, type)
+    return self.transform(trans, **kwargs)
 
-  def translateX(self, distance, name=None, type=None):
+  def translateX(self, distance, **kwargs):
     """angle is in radians"""
     trans = cgkit.cgtypes.mat4.translation(cgkit.cgtypes.vec3(distance,0,0))
-    return self.transform(trans, name, type)
+    return self.transform(trans, **kwargs)
 
-  def translateY(self, distance, name=None, type=None):
+  def translateY(self, distance, **kwargs):
     """angle is in radians"""
     trans = cgkit.cgtypes.mat4.translation(cgkit.cgtypes.vec3(0,distance,0))
-    return self.transform(trans, name, type)
+    return self.transform(trans, **kwargs)
 
-  def translateZ(self, distance, name=None, type=None):
+  def translateZ(self, distance, **kwargs):
     """angle is in radians"""
     trans = cgkit.cgtypes.mat4.translation(cgkit.cgtypes.vec3(0,0,distance))
-    return self.transform(trans, name, type)
+    return self.transform(trans, **kwargs)
   
-  def bU(self, second, name=None, type=None):
-    return barleycorn.compounds.BooleanUnion(self, second, name, type)
+  def bU(self, second, **kwargs):
+    return barleycorn.compounds.BooleanUnion(self, second, **kwargs)
 
-  def bI(self, second, name=None, type=None):
-    return barleycorn.compounds.BooleanIntersection(self, second, name, type)
+  def bI(self, second, **kwargs):
+    return barleycorn.compounds.BooleanIntersection(self, second, **kwargs)
 
-  def bS(self, second, name=None, type=None):
-    return barleycorn.compounds.BooleanSubtraction(self, second, name, type)
+  def bS(self, second, **kwargs):
+    return barleycorn.compounds.BooleanSubtraction(self, second, **kwargs)
 
 class Transformation(Component):
-  def __init__(self, component, transformation, name=None, type=None):
-    Component.__init__(self, name, type)
+  def __init__(self, component, transformation, **kwargs):
+    Component.__init__(self, **kwargs)
     self.component = component
     self.transformation = transformation
   
@@ -85,8 +86,8 @@ class Transformation(Component):
     return result
 
 class Wrapper(Component):
-  def __init__(self, component, name=None, type=None):
-    Component.__init__(self, name, type)
+  def __init__(self, component, **kwargs):
+    Component.__init__(self, **kwargs)
     self.component = component
 
   def __getattr__(self, attrname):
@@ -104,4 +105,6 @@ class simpleRotation(object):
     self.locZ = locZ
   
 import barleycorn.compounds
+import barleycorn.primitives
+import barleycorn.toolkits
 
