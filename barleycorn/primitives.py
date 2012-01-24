@@ -41,7 +41,7 @@ class Cylinder(Primitive):
 
 class Wedge(Primitive):
   """an arc of a cylinder with its axis beginning at the origin and extending along the positive z axis
-  and its angle beginning at the positive x axis and rotating toward the positive y axis"""
+  and its angle beginning at the positive x axis and rotating toward the positive y axis; angle is in degrees"""
   def __init__(self, radius, height, angle, **kwargs):
     Primitive.__init__(self, **kwargs)
     self.radius = radius
