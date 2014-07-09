@@ -3,7 +3,7 @@ import barleycorn
 import barleycorn.primitives
 import barleycorn.compounds
 import FreeCAD
-from FreeCAD import Part
+import Part
 from FreeCAD import Base
 import datetime
 import os
