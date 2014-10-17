@@ -1,5 +1,5 @@
-# this is a skeleton, based on the FreeCAD class.  I'm working my way through it, 
-# adapting it to the Rhino API
+# this is a skeleton, based on the FreeCAD class.  I'm working my way through it,
+#  adapting it to the Rhino API
 import datetime
 import os
 import barleycorn
@@ -8,6 +8,7 @@ import barleycorn.compounds
 import rhinoscript
 import Rhino
 import rhinoscriptsyntax as rs
+import scriptcontext
 
 _toolkitRhino = None
 
@@ -21,7 +22,7 @@ class ForToolkitRhino(barleycorn.ForToolkit):
   def __init__(self, component, toolkit):
     barleycorn.ForToolkit.__init__(self, component, toolkit)
     self.resolved = False
-    self.brep = None
+    self.guid = None
     
   def resolve(self):
     # see http://peter-hoffmann.com/2010/extrinsic-visitor-pattern-python-inheritance.html
@@ -35,68 +36,71 @@ class ForToolkitRhino(barleycorn.ForToolkit):
       if not meth:
         raise Exception("can't resolve type: "+str(type(self.component)))
       return meth()
+    return self
   
   def resolveWrapper(self):
-    self.brep = self.component.component.getForToolkit(self.toolkit).resolve().brep
+    self.guid = self.component.component.getForToolkit(self.toolkit).resolve().guid
+    return self
   
   def resolveTransformation(self):
-    self.brep = self.component.component.getForToolkit(self.toolkit).resolve().brep.Duplicate()
-    self.brep.Transform(self.makeMatrix(self.component.transformation))
-  
+    matrix = self.makeMatrix(self.component.transformation)
+    self.guid = rs.TransformObject(self.component.component.getForToolkit(self.toolkit).resolve().guid, matrix, True)
+    return self
+
   def resolveCone(self):
-    self.brep = rhinoscript.surface.AddCone(rhinoscript.plane.WorldXYPlane(), self.component.height, self.component.radius)
+    self.brep = rhinoscript.surface.AddCone(rs.WorldXYPlane(), self.component.height, self.component.radius)
     return self
   
   def resolveCylinder(self):
-    self.brep = rhinoscript.surface.AddCylinder(rhinoscript.plane.WorldXYPlane(), self.component.height, self.component.radius)
+    self.brep = rhinoscript.surface.AddCylinder(rs.WorldXYPlane(), self.component.height, self.component.radius)
     return self
   
   def resolveBox(self):
     (x, y, z) = (self.component.dimX, self.component.dimY, self.component.dimY)
     verts = ((0.0, 0.0, 0.0), (x, 0.0, 0.0), (x, y, 0.0), (0.0, y, 0.0), (0.0, 0.0, z), (x, 0.0, z), (x, y, z), (0.0, y, z))
-    self.brep = rhinoscript.surface.AddBox(verts)
+    self.guid = rs.AddBox(verts)
     return self
   
   def resolveTorus(self):
-    self.brep = rhinoscript.surface.AddTorus(self.component.radiusMajor, self.component.radiusMinor)
+    self.guid = rs.AddTorus(rs.WorldXYPlane(),self.component.radiusMajor, self.component.radiusMinor)
     return self
   
   def resolveSphere(self):
-    self.brep = rhinoscript.surface.AddSphere(self.component.radius)
+    self.guid = rs.AddSphere(rs.WorldXYPlane(), self.component.radius)
     return self
             
   def resolveBooleanUnion(self):
-    first = self.component.first.getForToolkit(self.toolkit).resolve().brep
-    second = self.component.second.getForToolkit(self.toolkit).resolve().brep
-    [self.brep] = rs.BooleanUnion([first, second], delete_input=False)
+    first = self.component.first.getForToolkit(self.toolkit).resolve().guid
+    second = self.component.second.getForToolkit(self.toolkit).resolve().guid
+    [self.guid] = rs.BooleanUnion([first, second], delete_input=False)
     return self
 
   def resolveBooleanIntersection(self):
-    first = self.component.first.getForToolkit(self.toolkit).resolve().brep
-    second = self.component.second.getForToolkit(self.toolkit).resolve().brep
-    [self.brep] = rs.BooleanIntersection([first], [second], delete_input=False)
+    first = self.component.first.getForToolkit(self.toolkit).resolve().guid
+    second = self.component.second.getForToolkit(self.toolkit).resolve().guid
+    [self.guid] = rs.BooleanIntersection([first], [second], delete_input=False)
     return self
 
   def resolveBooleanSubtraction(self):
-    first = self.component.first.getForToolkit(self.toolkit).resolve().brep
-    second = self.component.second.getForToolkit(self.toolkit).resolve().brep
-    [self.brep] = rs.BooleanDifference([first], [second], delete_input=False)
+    first = self.component.first.getForToolkit(self.toolkit).resolve().guid
+    second = self.component.second.getForToolkit(self.toolkit).resolve().guid
+    [self.guid] = rs.BooleanDifference([first], [second], delete_input=False)
     return self
   
   def makeMatrix(self, transformation):
-    """takes a cgkit.cgtypes.mat4, returns Rhino.Geometry.Transform"""
-    m = Rhino.Geometry.Transform(1.0)
-    (m.M00, m.M01, m.M02, m.M03, m.M10, m.M11, m.M12, m.M13, m.M20, m.M21, m.M22, m.M23, m.M30, m.M31, m.M32, m.M33) = transformation.toList(rowmajor=True)
-    return m
+    """takes a cgkit.cgtypes.mat4, returns a list of lists"""
+    return transformation.toList(rowmajor=True)
 
 class ToolkitRhino(barleycorn.Toolkit):
   def __init__(self):
     self.App = Rhino.RhinoApp
-    barleycorn.Toolkit.__init__(self, "Rhino "+str(self.App.ExeVersion)+"."+str(self.App.ExeServiceRelease), ForToolkitRhino)
+    barleycorn.Toolkit.__init__(self, "Rhino "+str(rs.ExeVersion())+"."+str(rs.ExeServiceRelease()), ForToolkitRhino)
   
   def show(self, components):
-    for component in components:
-      topftk = component.getForToolkit(self).resolve()
+    keeper_guids = [component.getForToolkit(self).resolve().guid for component in components]
+    for rhino_object in scriptcontext.doc.Objects:
+      if not any(rhino_object.Equals(guid) for guid in keeper_guids):
+        rs.DeleteObject(rhino_object)
     return components
     
   def exportSTL(self, components, prefix):
@@ -111,19 +115,19 @@ class ToolkitRhino(barleycorn.Toolkit):
       topftk.brep.exportStl(os.path.join(dirPath, name+".stl"))
   
   def clean(self):
-    for ob in self.App.ActiveDocument.Objects:
-      self.App.ActiveDocument.removeObject(ob.Name)
-      
-  def look(self):
-    self.App.Gui.SendMsgToActiveView("ViewFit")
-    self.App.Gui.activeDocument().activeView().viewAxometric()
-    
+    for rhino_object in scriptcontext.doc.Objects:
+      rs.DeleteObject(rhino_object)
+
+  def look(self, components=None):
+    if components:
+      rs.ZoomBoundingBox(rs.BoundingBox())
+
 class SpecialRhino(barleycorn.primitives.Special):
   """a Rhino-specific implementation of primitives.Special"""
   def __init__(self, toolkit, **kwargs):
     barleycorn.primitives.Special.__init__(self, **kwargs)
     ftk = self.getForToolkit(toolkit)
-    ftk.brep = self.geometry()
+    ftk.guid = self.geometry()
     ftk.resolved = True
   
   def geometry(self): #this is where the FreCAD-specific code goes
