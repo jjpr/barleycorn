@@ -88,8 +88,10 @@ class ForToolkitRhino(barleycorn.ForToolkit):
     return self
   
   def makeMatrix(self, transformation):
-    """takes a cgkit.cgtypes.mat4, returns a list of lists"""
-    return transformation.toList(rowmajor=True)
+    # """takes a cgkit.cgtypes.mat4, returns a list of lists"""
+    # return transformation.toList(rowmajor=True)
+    #Does a pyrr Matrix44 just appear to be a list of lists?
+    return transformation
 
 class ToolkitRhino(barleycorn.Toolkit):
   def __init__(self):
