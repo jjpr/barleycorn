@@ -1,5 +1,5 @@
-# import cgkit.cgtypes
-import pyrr
+import cgkit.cgtypes
+# import pyrr
 import datetime
 # other imports at end to avoid circularity problems
 
@@ -37,38 +37,38 @@ class Component(object):
 
   def rotateX(self, angle, **kwargs):
     """angle is in radians"""
-    # trans = cgkit.cgtypes.mat4.rotation(angle, cgkit.cgtypes.vec3(1,0,0))
-    trans = pyrr.Matrix44.from_x_rotation(angle)
+    trans = cgkit.cgtypes.mat4.rotation(angle, cgkit.cgtypes.vec3(1,0,0))
+    # trans = pyrr.Matrix44.from_x_rotation(angle)
     return self.transform(trans, **kwargs)
 
   def rotateY(self, angle, **kwargs):
     """angle is in radians"""
-    # trans = cgkit.cgtypes.mat4.rotation(angle, cgkit.cgtypes.vec3(0,1,0))
-    trans = pyrr.Matrix44.from_y_rotation(angle)
+    trans = cgkit.cgtypes.mat4.rotation(angle, cgkit.cgtypes.vec3(0,1,0))
+    # trans = pyrr.Matrix44.from_y_rotation(angle)
     return self.transform(trans, **kwargs)
 
   def rotateZ(self, angle, **kwargs):
     """angle is in radians"""
-    # trans = cgkit.cgtypes.mat4.rotation(angle, cgkit.cgtypes.vec3(0,0,1))
-    trans = pyrr.Matrix44.from_z_rotation(angle)
+    trans = cgkit.cgtypes.mat4.rotation(angle, cgkit.cgtypes.vec3(0,0,1))
+    # trans = pyrr.Matrix44.from_z_rotation(angle)
     return self.transform(trans, **kwargs)
 
   def translateX(self, distance, **kwargs):
     """angle is in radians"""
-    # trans = cgkit.cgtypes.mat4.translation(cgkit.cgtypes.vec3(distance,0,0))
-    trans = pyrr.Matrix44.from_translation(pyrr.Vector3([distance, 0.0, 0.0]))
+    trans = cgkit.cgtypes.mat4.translation(cgkit.cgtypes.vec3(distance,0,0))
+    # trans = pyrr.Matrix44.from_translation(pyrr.Vector3([distance, 0.0, 0.0]))
     return self.transform(trans, **kwargs)
 
   def translateY(self, distance, **kwargs):
     """angle is in radians"""
-    # trans = cgkit.cgtypes.mat4.translation(cgkit.cgtypes.vec3(0,distance,0))
-    trans = pyrr.Matrix44.from_translation(pyrr.Vector3([0.0, distance, 0.0]))
+    trans = cgkit.cgtypes.mat4.translation(cgkit.cgtypes.vec3(0,distance,0))
+    # trans = pyrr.Matrix44.from_translation(pyrr.Vector3([0.0, distance, 0.0]))
     return self.transform(trans, **kwargs)
 
   def translateZ(self, distance, **kwargs):
     """angle is in radians"""
-    # trans = cgkit.cgtypes.mat4.translation(cgkit.cgtypes.vec3(0,0,distance))
-    trans = pyrr.Matrix44.from_translation(pyrr.Vector3([0.0, 0.0, distance]))
+    trans = cgkit.cgtypes.mat4.translation(cgkit.cgtypes.vec3(0,0,distance))
+    # trans = pyrr.Matrix44.from_translation(pyrr.Vector3([0.0, 0.0, distance]))
     return self.transform(trans, **kwargs)
   
   def bU(self, second, **kwargs):
@@ -88,8 +88,8 @@ class Transformation(Component):
   
   def __getattr__(self, attrname):
     result = getattr(self.component, attrname)
-    if isinstance(result, pyrr.Vector3):
-      return result*self.transformation
+    # if isinstance(result, pyrr.Vector3):
+    #   return result*self.transformation
     return result
 
 class Wrapper(Component):
