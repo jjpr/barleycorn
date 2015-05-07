@@ -16,8 +16,8 @@ class RockerStand01(barleycorn.Wrapper):
     leg_angle = (pi-tet_angle)/2.0
     foot_radius = self.wall_thickness * 4.0
     leg_length = self.bowl_radius_outer * 2.0
-    rim_radius_major = (self.bowl_radius_outer + self.bowl_radius_inner) / 2.0
     self.bowl_radius_inner = self.bowl_radius_outer - self.wall_thickness
+    rim_radius_major = (self.bowl_radius_outer + self.bowl_radius_inner) / 2.0
 
     sph_bowl_outer = barleycorn.primitives.Sphere(self.bowl_radius_outer)
     cyl_bowl_outer = barleycorn.primitives.Cylinder(self.bowl_radius_outer*1.001, self.bowl_radius_outer*1.001)
