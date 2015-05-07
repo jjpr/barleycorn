@@ -61,19 +61,20 @@ class RockerMiddle01(barleycorn.Wrapper):
   def makeMe(self):
     self.bowl_radius_outer = self.clearance_radius_outer - (self.wall_thickness * 2.0)
     self.bowl_radius_inner = self.bowl_radius_outer - self.wall_thickness
-    rim_radius_major = (self.bowl_radius_outer + self.bowl_radius_inner) / 2.0
+    self.rim_radius_major = (self.bowl_radius_outer + self.bowl_radius_inner) / 2.0
     pivot_arm_offset = self.wall_thickness * 3.0
-    pivot_arm_length = self.stand_rim_radius_major - rim_radius_major
+    pivot_arm_length = self.stand_rim_radius_major - self.rim_radius_major
+    self.clearance_radius_inner = self.rim_radius_major - (self.clearance_radius_outer - self.rim_radius_major)
 
     sph_bowl_outer = barleycorn.primitives.Sphere(self.bowl_radius_outer)
     cyl_bowl_outer = barleycorn.primitives.Cylinder(self.bowl_radius_outer*1.001, self.bowl_radius_outer*1.001)
     cyl_bowl_outer = cyl_bowl_outer.translateZ(-cyl_bowl_outer.height)
     sph_bowl_inner = barleycorn.primitives.Sphere(self.bowl_radius_inner)
 
-    tor_rim = barleycorn.primitives.Torus(rim_radius_major, self.wall_thickness)
+    tor_rim = barleycorn.primitives.Torus(self.rim_radius_major, self.wall_thickness)
     con_rim_divot = barleycorn.primitives.Cone(self.wall_thickness * 2.0, self.wall_thickness *2.0)
-    con_rim_divot_pos = con_rim_divot.translateX(rim_radius_major)
-    con_rim_divot_neg = con_rim_divot.translateX(-rim_radius_major)
+    con_rim_divot_pos = con_rim_divot.translateX(self.rim_radius_major)
+    con_rim_divot_neg = con_rim_divot.translateX(-self.rim_radius_major)
 
     con_pivot = barleycorn.primitives.Cone(self.wall_thickness, pivot_arm_offset)
     cyl_pivot_arm = barleycorn.primitives.Cylinder(self.wall_thickness * 1.001, pivot_arm_length + (self.wall_thickness * 2.0))
@@ -90,3 +91,39 @@ class RockerMiddle01(barleycorn.Wrapper):
     middle = body.bS(con_rim_divot_pos).bS(con_rim_divot_neg).bU(pivot_pos).bU(pivot_neg)
 
     return middle
+
+class RockerCenter01(barleycorn.Wrapper):
+  def __init__(self, clearance_radius_outer=15.0, middle_rim_radius_major=17.5, wall_thickness=1.0, **kwargs):
+    self.clearance_radius_outer = clearance_radius_outer
+    self.middle_rim_radius_major = middle_rim_radius_major
+    self.wall_thickness = wall_thickness
+
+    barleycorn.Wrapper.__init__(self, self.makeMe(), **kwargs)
+
+  def makeMe(self):
+    self.bowl_radius_outer = self.clearance_radius_outer - (self.wall_thickness * 2.0)
+    self.rim_radius_major = self.bowl_radius_outer - (self.wall_thickness / 2.0)
+    pivot_arm_offset = self.wall_thickness * 3.0
+    pivot_arm_length = self.middle_rim_radius_major - self.rim_radius_major
+
+    sph_bowl_outer = barleycorn.primitives.Sphere(self.bowl_radius_outer)
+    cyl_bowl_outer = barleycorn.primitives.Cylinder(self.bowl_radius_outer*1.001, self.bowl_radius_outer*1.001)
+    cyl_bowl_outer = cyl_bowl_outer.translateZ(-cyl_bowl_outer.height)
+
+    tor_rim = barleycorn.primitives.Torus(self.rim_radius_major, self.wall_thickness)
+
+    con_pivot = barleycorn.primitives.Cone(self.wall_thickness, pivot_arm_offset)
+    cyl_pivot_arm = barleycorn.primitives.Cylinder(self.wall_thickness * 1.001, pivot_arm_length + (self.wall_thickness * 2.0))
+    cyl_pivot_arm = cyl_pivot_arm.rotateY(-pi/2.0).translateX(con_pivot.radius).translateZ(con_pivot.height)
+    cyl_pivot_riser = barleycorn.primitives.Cylinder(self.wall_thickness, con_pivot.height)
+    cyl_pivot_riser = cyl_pivot_riser.translateX(-pivot_arm_length)
+
+    pivot = con_pivot.bU(cyl_pivot_arm).bU(cyl_pivot_riser)
+    pivot_pos = pivot.translateX(self.middle_rim_radius_major)
+    pivot_neg = pivot_pos.rotateZ(pi)
+
+    body = cyl_bowl_outer.bI(sph_bowl_outer).bU(tor_rim)
+
+    center = body.bU(pivot_pos).bU(pivot_neg)
+
+    return center
