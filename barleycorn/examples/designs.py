@@ -16,6 +16,7 @@ class RockerStand01(barleycorn.Wrapper):
     leg_angle = (pi-tet_angle)/2.0
     foot_radius = self.wall_thickness * 4.0
     leg_length = self.bowl_radius_outer * 2.0
+    rim_radius_major = (self.bowl_radius_outer + self.bowl_radius_inner) / 2.0
     self.bowl_radius_inner = self.bowl_radius_outer - self.wall_thickness
 
     sph_bowl_outer = barleycorn.primitives.Sphere(self.bowl_radius_outer)
@@ -36,7 +37,14 @@ class RockerStand01(barleycorn.Wrapper):
 
     legs = leg_foot_brace_01.bU(leg_foot_brace_02).bU(leg_foot_brace_03)
 
-    stand = cyl_bowl_outer.bI(sph_bowl_outer).bU(legs).bS(sph_bowl_inner)
+    tor_rim = barleycorn.primitives.Torus(rim_radius_major, self.wall_thickness)
+    con_rim_divot = barleycorn.primitives.Cone(self.wall_thickness * 2.0, self.wall_thickness *2.0)
+    con_rim_divot_pos = con_rim_divot.translateY(rim_radius_major)
+    con_rim_divot_neg = con_rim_divot.translateY(-rim_radius_major)
+
+    base = cyl_bowl_outer.bI(sph_bowl_outer).bU(legs).bS(sph_bowl_inner)
+
+    stand = base.bU(tor_rim).bS(con_rim_divot_pos).bS(con_rim_divot_neg)
 
     return stand
 
