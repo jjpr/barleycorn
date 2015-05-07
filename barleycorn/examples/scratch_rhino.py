@@ -29,6 +29,7 @@ def expt(func, export=False):
 if __name__=="__main__":
   print __file__
 
-  expt(xRS01)
+  # expt(xRS01)
+  expt(xRAll01)
 
 
