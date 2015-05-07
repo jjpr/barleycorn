@@ -1,10 +1,10 @@
 __author__ = 'jjpr'
 
 import sys
-from scratch import *
-
+sys.path.append('/Users/jjpr/Development/workspace-pycharm-community-3.4.1/barleycorn')
 sys.path.append('/Users/jjpr/Downloads/sourceforge/cgkit/light')
 
+from scratch import *
 import barleycorn.toolkits.toolkitRhino
 
 _tk = barleycorn.toolkits.toolkitRhino.getToolkitRhino()
@@ -26,4 +26,9 @@ def expt(func, export=False):
     # _tk.exportSTL(stuff, _out_prefix)
   return stuff
 
-expt(xRS01)
+if __name__=="__main__":
+  print __file__
+
+  expt(xRS01)
+
+

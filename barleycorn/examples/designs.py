@@ -36,5 +36,7 @@ class RockerStand01(barleycorn.Wrapper):
 
     legs = leg_foot_brace_01.bU(leg_foot_brace_02).bU(leg_foot_brace_03)
 
-    return legs
+    stand = cyl_bowl_outer.bI(sph_bowl_outer).bU(legs).bS(sph_bowl_inner)
+
+    return stand
 
