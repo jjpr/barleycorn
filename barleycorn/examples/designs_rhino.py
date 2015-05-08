@@ -17,22 +17,22 @@ class Tree(SpecialRhino):
     return self.tree_gen(self.base_radius, self.base_radius * 40.0)
 
   def tree_gen(self, radius, height):
+    reduction = 0.7
+    sub_radius = radius * reduction
+    sub_height = height * reduction
     if radius < self.terminal_radius:
-      return self.leaf_gen(radius)
+      return self.leaf_gen(sub_radius)
     else:
-      trunk = [self.twig_gen(radius, height)]
-      reduction = 0.7
-      sub_radius = radius * reduction
-      sub_height = height * reduction
+      trunk = [self.twig_gen(radius, sub_radius, height)]
       sub_num = random.randint(1, self.density)
       tip = self.tree_gen(sub_radius, sub_height)
-      tip = rs.MoveObjects(tip, (0,0,sub_height))
+      tip = rs.MoveObjects(tip, (0,0,height * 0.99))
       trunk = rs.BooleanUnion(trunk+tip) or trunk
       for i in range(sub_num):
         sub = self.tree_gen(sub_radius, sub_height)
         sub = rs.RotateObjects(sub, (0,0,0), self.bend(), (0,1,0))
         sub = rs.RotateObjects(sub, (0,0,0), random.random()*360.0, (0,0,1))
-        sub = rs.MoveObjects(sub, (0,0,random.random()*height*0.4+height*0.5))
+        sub = rs.MoveObjects(sub, (0,0,height - (random.random()*height*0.85)))
         trunk = rs.BooleanUnion(trunk+sub) or trunk
       return trunk
 
@@ -61,17 +61,16 @@ class Tree(SpecialRhino):
     return rs.JoinSurfaces([srf, cap])
 
 
-  def twig_gen(self, radius, height):
-    base = rs.AddCircle(rs.WorldXYPlane(), radius)
-    mid_01 = rs.MoveObject(rs.AddCircle(rs.WorldXYPlane(), radius * 0.85), (0.0, 0.0, height * 0.45))
-    mid_02 = rs.MoveObject(rs.AddCircle(rs.WorldXYPlane(), radius * 0.40), (0.0, 0.0, height * 0.9))
-    end = (0.0, 0.0, height)
-    srf = rs.AddLoftSrf([base, mid_01, mid_02], end=end)
-    cap = rs.AddPlanarSrf([base])
-    return rs.JoinSurfaces([srf, cap])
+  def twig_gen(self, base_radius, top_radius, height):
+    base = rs.AddCircle(rs.WorldXYPlane(), base_radius)
+    top = rs.MoveObject(rs.AddCircle(rs.WorldXYPlane(), top_radius), (0.0, 0.0, height))
+    srf = rs.AddLoftSrf([base, top])
+    cap0 = rs.AddPlanarSrf([base])
+    cap1 = rs.AddPlanarSrf([top])
+    return rs.JoinSurfaces([srf, cap0, cap1])
 
   def bend(self):
-    return 90 * (-(2.0/(self.density + 2.0))+1.0)
+    return 25
 
 class RockerTree01(barleycorn.Wrapper):
   def __init__(self, middle, **kwargs):
