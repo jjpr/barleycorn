@@ -52,6 +52,10 @@ class ForToolkitRhino(barleycorn.ForToolkit):
     self.guids += rs.TransformObjects(self.component.component.getForToolkit(self.toolkit).resolve().guids, matrix, True)
     return self
 
+  def resolveSpecial(self):
+    self.guids += self.component.geometry()
+    return self
+
   def resolveCone(self):
     self.guids += [rhinoscript.surface.AddCone(rs.WorldXYPlane(), self.component.height, self.component.radius)]
     return self
@@ -142,12 +146,9 @@ class ToolkitRhino(barleycorn.Toolkit):
 
 class SpecialRhino(barleycorn.primitives.Special):
   """a Rhino-specific implementation of primitives.Special"""
-  def __init__(self, toolkit, **kwargs):
+  def __init__(self, **kwargs):
     barleycorn.primitives.Special.__init__(self, **kwargs)
-    ftk = self.getForToolkit(toolkit)
-    ftk.guids = self.geometry()
-    ftk.resolved = True
-  
-  def geometry(self): #this is where the FreCAD-specific code goes
+
+  def geometry(self): #this is where the Rhino-specific code goes
     raise NotImplementedError()
 
