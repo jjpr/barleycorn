@@ -7,33 +7,37 @@ import rhinoscriptsyntax as rs
 import random
 
 class Tree(SpecialRhino):
-  def __init__(self, base_radius=4.0, terminal_radius=0.5, density=5, **kwargs):
+  def __init__(self, base_radius=4.0, terminal_radius=0.5, height=100.0, density=5, fraction=0.5, angle=60, **kwargs):
     self.base_radius = base_radius
     self.terminal_radius = terminal_radius
+    self.height = height
     self.density = density
+    self.fraction = fraction
+    self.angle = angle
     SpecialRhino.__init__(self, **kwargs)
 
   def geometry(self):
-    return self.tree_gen(self.base_radius, self.base_radius * 40.0)
+    return self.tree_gen(self.base_radius, self.height)
 
   def tree_gen(self, radius, height):
-    reduction = 0.7
-    sub_radius = radius * reduction
-    sub_height = height * reduction
+    sub_radius = radius * self.fraction
     if radius < self.terminal_radius:
       return self.leaf_gen(sub_radius)
     else:
       trunk = [self.twig_gen(radius, sub_radius, height)]
-      sub_num = random.randint(1, self.density)
-      tip = self.tree_gen(sub_radius, sub_height)
-      tip = rs.MoveObjects(tip, (0,0,height * 0.99))
-      trunk = rs.BooleanUnion(trunk+tip) or trunk
-      for i in range(sub_num):
+      sub_angle_z = 0
+      for i in range(self.density):
+        sub_height = height * (self.fraction ** (i+1))
+        sub_angle_y = self.angle * (self.fraction ** i)
+        sub_angle_z += self.angle - (random.random() * self.angle / 2.0)
         sub = self.tree_gen(sub_radius, sub_height)
-        sub = rs.RotateObjects(sub, (0,0,0), self.bend(), (0,1,0))
-        sub = rs.RotateObjects(sub, (0,0,0), random.random()*360.0, (0,0,1))
-        sub = rs.MoveObjects(sub, (0,0,height - (random.random()*height*0.85)))
-        trunk = rs.BooleanUnion(trunk+sub) or trunk
+        sub = rs.RotateObjects(sub, (0,0,0), sub_angle_y, (0,1,0))
+        sub = rs.RotateObjects(sub, (0,0,0), sub_angle_z, (0,0,1))
+        sub = rs.MoveObjects(sub, (0,0,height - sub_height))
+        try:
+          trunk = rs.BooleanUnion(trunk+sub) or trunk
+        except Exception as e:
+          print e
       return trunk
 
   def leaf_gen(self, radius):
@@ -70,7 +74,7 @@ class Tree(SpecialRhino):
     return rs.JoinSurfaces([srf, cap0, cap1])
 
   def bend(self):
-    return 25
+    return 44
 
 class RockerTree01(barleycorn.Wrapper):
   def __init__(self, middle, **kwargs):

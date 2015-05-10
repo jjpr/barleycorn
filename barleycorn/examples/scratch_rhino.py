@@ -28,7 +28,7 @@ def expt(func, export=False):
   return stuff
 
 def xTree(tk):
-  tree = designs_rhino.Tree(base_radius=1.0, terminal_radius=0.4, density=8)
+  tree = designs_rhino.Tree(base_radius=4.0, terminal_radius=0.5, density=15)
   print tree
   return [tree]
 
