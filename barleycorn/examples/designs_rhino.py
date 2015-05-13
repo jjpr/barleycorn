@@ -7,38 +7,48 @@ import rhinoscriptsyntax as rs
 import random
 
 class Tree(SpecialRhino):
-  def __init__(self, base_radius=4.0, terminal_radius=0.5, height=100.0, density=5, fraction=0.5, angle=60, **kwargs):
+  def __init__(self, base_radius=4.0, terminal_radius=0.25, height=100.0, density=7, fraction=0.75, angle=180, bend=45,
+               **kwargs):
     self.base_radius = base_radius
     self.terminal_radius = terminal_radius
     self.height = height
     self.density = density
     self.fraction = fraction
     self.angle = angle
+    self.leaf = None
+    self.bend = bend
     SpecialRhino.__init__(self, **kwargs)
 
   def geometry(self):
     return self.tree_gen(self.base_radius, self.height)
 
   def tree_gen(self, radius, height):
-    sub_radius = radius * self.fraction
     if radius < self.terminal_radius:
-      return self.leaf_gen(sub_radius)
+      return self.get_leaf(radius * self.fraction)
     else:
-      trunk = [self.twig_gen(radius, sub_radius, height)]
+      trunk = [self.twig_gen(radius, radius, height)]
       sub_angle_z = 0
       for i in range(self.density):
+        sub_radius = radius * (self.fraction ** (i+1))
         sub_height = height * (self.fraction ** (i+1))
-        sub_angle_y = self.angle * (self.fraction ** i)
-        sub_angle_z += self.angle - (random.random() * self.angle / 2.0)
+        sub_angle_y = self.bend * (self.fraction ** i)
+        sub_angle_z += (1.5 * self.angle) - (random.random() * self.angle)
         sub = self.tree_gen(sub_radius, sub_height)
         sub = rs.RotateObjects(sub, (0,0,0), sub_angle_y, (0,1,0))
         sub = rs.RotateObjects(sub, (0,0,0), sub_angle_z, (0,0,1))
         sub = rs.MoveObjects(sub, (0,0,height - sub_height))
-        try:
-          trunk = rs.BooleanUnion(trunk+sub) or trunk
-        except Exception as e:
-          print e
+        # try:
+        #   trunk = rs.BooleanUnion(trunk+sub) or trunk
+        # except Exception as e:
+        #   print e
+        trunk = trunk + sub
       return trunk
+
+  def get_leaf(self, radius):
+    # if not self.leaf:
+    #   self.leaf = self.leaf_gen(1.0)
+    # return rs.ScaleObject(self.leaf, (0.0, 0.0, 0.0), [radius]*3, True)
+    return []
 
   def leaf_gen(self, radius):
     radius_02 = 0.85 * radius
@@ -64,17 +74,8 @@ class Tree(SpecialRhino):
 
     return rs.JoinSurfaces([srf, cap])
 
-
   def twig_gen(self, base_radius, top_radius, height):
-    base = rs.AddCircle(rs.WorldXYPlane(), base_radius)
-    top = rs.MoveObject(rs.AddCircle(rs.WorldXYPlane(), top_radius), (0.0, 0.0, height))
-    srf = rs.AddLoftSrf([base, top])
-    cap0 = rs.AddPlanarSrf([base])
-    cap1 = rs.AddPlanarSrf([top])
-    return rs.JoinSurfaces([srf, cap0, cap1])
-
-  def bend(self):
-    return 44
+    return rs.AddCylinder(rs.WorldXYPlane(), height, base_radius)
 
 class RockerTree01(barleycorn.Wrapper):
   def __init__(self, middle, **kwargs):
