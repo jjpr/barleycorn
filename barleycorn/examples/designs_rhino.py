@@ -8,7 +8,7 @@ import random
 
 class Tree(SpecialRhino):
   def __init__(self, base_radius=4.0, terminal_radius=0.25, height=40.0, density=7, fraction=0.75, angle=180, bend=45,
-               **kwargs):
+               for_reals=True, **kwargs):
     self.base_radius = base_radius
     self.terminal_radius = terminal_radius
     self.height = height
@@ -17,47 +17,46 @@ class Tree(SpecialRhino):
     self.angle = angle
     self.leaf = None
     self.bend = bend
+    self.for_reals = for_reals
     SpecialRhino.__init__(self, **kwargs)
 
   def geometry(self):
-    return self.tree_gen(self.base_radius, self.height)
+    result, summary = self.tree_gen(self.base_radius, self.height)
+    self.summary = summary
+    return result or [self.get_leaf(self.base_radius)]
 
   def tree_gen(self, radius, height):
+    result = []
+    summary = []
     if radius < self.terminal_radius:
-      return self.get_leaf(radius * self.fraction)
+      sub_radius = radius * self.fraction
+      if self.for_reals:
+        result.append(self.get_leaf(sub_radius))
+      summary.append("leaf " + str(sub_radius))
     else:
-      trunk = [self.twig_gen(radius, radius, height)]
+      if self.for_reals:
+        result.append(self.twig_gen(radius, radius, height))
+      summary.append("twig " + str(radius) + " " + str(height))
       sub_angle_y = self.bend
       sub_angle_z = (1.5 * self.angle) - (random.random() * self.angle)
       sub_radius = radius * self.fraction
       sub_height = height * self.fraction
-      sub = self.tree_gen(sub_radius, sub_height)
-      sub = rs.RotateObjects(sub, (0,0,0), sub_angle_y, (0,1,0))
-      sub = rs.RotateObjects(sub, (0,0,0), sub_angle_z, (0,0,1))
-      sub = rs.MoveObjects(sub, (0,0,height))
-      center = rs.MoveObjects(self.tree_gen(sub_radius, sub_height), (0,0,height))
-      # for i in range(self.density):
-      #   sub_radius = radius * (self.fraction ** (i+1))
-      #   sub_height = height * (self.fraction ** (i+1))
-      #   sub_angle_y = self.bend * (self.fraction ** i)
-      #   sub_angle_z += (1.5 * self.angle) - (random.random() * self.angle)
-      #   sub = self.tree_gen(sub_radius, sub_height)
-      #   sub = rs.RotateObjects(sub, (0,0,0), sub_angle_y, (0,1,0))
-      #   sub = rs.RotateObjects(sub, (0,0,0), sub_angle_z, (0,0,1))
-      #   sub = rs.MoveObjects(sub, (0,0,height - sub_height))
-      #   # try:
-      #   #   trunk = rs.BooleanUnion(trunk+sub) or trunk
-      #   # except Exception as e:
-      #   #   print e
-      #   trunk = trunk + sub
-      trunk = trunk + sub + center
-      return trunk
+      sub, sub_summary = self.tree_gen(sub_radius, sub_height)
+      center, center_summary = self.tree_gen(sub_radius, sub_height)
+      if self.for_reals:
+        sub = rs.RotateObjects(sub, (0,0,0), sub_angle_y, (0,1,0))
+        sub = rs.RotateObjects(sub, (0,0,0), sub_angle_z, (0,0,1))
+        sub = rs.MoveObjects(sub, (0,0,height))
+        center = rs.MoveObjects(center, (0,0,height))
+      result += sub + center
+      summary.append(sub_summary)
+      summary.append(center_summary)
+    return result, summary
 
   def get_leaf(self, radius):
-    # if not self.leaf:
-    #   self.leaf = self.leaf_gen(1.0)
-    # return rs.ScaleObject(self.leaf, (0.0, 0.0, 0.0), [radius]*3, True)
-    return []
+    if not self.leaf:
+      self.leaf = self.leaf_gen(1.0)
+    return rs.ScaleObject(self.leaf, (0.0, 0.0, 0.0), [radius]*3, True)
 
   def leaf_gen(self, radius):
     radius_02 = 0.85 * radius

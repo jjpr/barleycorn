@@ -4,10 +4,11 @@ import sys
 print datetime.datetime.now()
 
 print "sys.modules: " 
-print sys.modules
 print sys.modules.keys()
 
 to_reload = [
+    "barleycorn",
+    "barleycorn.util",
     "barleycorn.toolkits.toolkitRhino",
     "barleycorn.examples.designs",
     "barleycorn.examples.scratch",
