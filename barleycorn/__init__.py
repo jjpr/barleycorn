@@ -53,6 +53,10 @@ class Component(object):
     # trans = pyrr.Matrix44.from_z_rotation(angle)
     return self.transform(trans, **kwargs)
 
+  def translate(self, coordinates, **kwargs):
+    trans = cgkit.cgtypes.mat4.translation(cgkit.cgtypes.vec3(coordinates))
+    return self.transform(trans, **kwargs)
+
   def translateX(self, distance, **kwargs):
     """angle is in radians"""
     trans = cgkit.cgtypes.mat4.translation(cgkit.cgtypes.vec3(distance,0,0))
