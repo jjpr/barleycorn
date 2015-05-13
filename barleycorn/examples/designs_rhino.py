@@ -7,7 +7,7 @@ import rhinoscriptsyntax as rs
 import random
 
 class Tree(SpecialRhino):
-  def __init__(self, base_radius=4.0, terminal_radius=0.25, height=100.0, density=7, fraction=0.75, angle=180, bend=45,
+  def __init__(self, base_radius=4.0, terminal_radius=0.25, height=40.0, density=7, fraction=0.75, angle=180, bend=45,
                **kwargs):
     self.base_radius = base_radius
     self.terminal_radius = terminal_radius
@@ -27,21 +27,30 @@ class Tree(SpecialRhino):
       return self.get_leaf(radius * self.fraction)
     else:
       trunk = [self.twig_gen(radius, radius, height)]
-      sub_angle_z = 0
-      for i in range(self.density):
-        sub_radius = radius * (self.fraction ** (i+1))
-        sub_height = height * (self.fraction ** (i+1))
-        sub_angle_y = self.bend * (self.fraction ** i)
-        sub_angle_z += (1.5 * self.angle) - (random.random() * self.angle)
-        sub = self.tree_gen(sub_radius, sub_height)
-        sub = rs.RotateObjects(sub, (0,0,0), sub_angle_y, (0,1,0))
-        sub = rs.RotateObjects(sub, (0,0,0), sub_angle_z, (0,0,1))
-        sub = rs.MoveObjects(sub, (0,0,height - sub_height))
-        # try:
-        #   trunk = rs.BooleanUnion(trunk+sub) or trunk
-        # except Exception as e:
-        #   print e
-        trunk = trunk + sub
+      sub_angle_y = self.bend
+      sub_angle_z = (1.5 * self.angle) - (random.random() * self.angle)
+      sub_radius = radius * self.fraction
+      sub_height = height * self.fraction
+      sub = self.tree_gen(sub_radius, sub_height)
+      sub = rs.RotateObjects(sub, (0,0,0), sub_angle_y, (0,1,0))
+      sub = rs.RotateObjects(sub, (0,0,0), sub_angle_z, (0,0,1))
+      sub = rs.MoveObjects(sub, (0,0,height))
+      center = rs.MoveObjects(self.tree_gen(sub_radius, sub_height), (0,0,height))
+      # for i in range(self.density):
+      #   sub_radius = radius * (self.fraction ** (i+1))
+      #   sub_height = height * (self.fraction ** (i+1))
+      #   sub_angle_y = self.bend * (self.fraction ** i)
+      #   sub_angle_z += (1.5 * self.angle) - (random.random() * self.angle)
+      #   sub = self.tree_gen(sub_radius, sub_height)
+      #   sub = rs.RotateObjects(sub, (0,0,0), sub_angle_y, (0,1,0))
+      #   sub = rs.RotateObjects(sub, (0,0,0), sub_angle_z, (0,0,1))
+      #   sub = rs.MoveObjects(sub, (0,0,height - sub_height))
+      #   # try:
+      #   #   trunk = rs.BooleanUnion(trunk+sub) or trunk
+      #   # except Exception as e:
+      #   #   print e
+      #   trunk = trunk + sub
+      trunk = trunk + sub + center
       return trunk
 
   def get_leaf(self, radius):
