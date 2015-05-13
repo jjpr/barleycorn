@@ -1,6 +1,7 @@
 __author__ = 'jjpr'
 
 import sys
+import datetime
 import json
 sys.path.append('/Users/jjpr/Development/workspace-pycharm-community-3.4.1/barleycorn')
 sys.path.append('/Users/jjpr/Downloads/sourceforge/cgkit/light')
@@ -47,14 +48,15 @@ def xTreeSummary():
     "fraction": [0.6, 0.5],
     "for_reals": [False]
   }
-  f = open("tree_test.json", mode='w')
+  f = open("tree_test_" + datetime.datetime.now().isoformat() + ".json", mode='w')
   results = barleycorn.util.iterate_and_stack(params, designs_rhino.Tree, 200)
+  summary = []
   for result in results:
     result.getForToolkit(_tk).resolve()
-    print {key: getattr(result, key, "blank") for key in params.keys()}
-    dump = json.dumps(result.summary, indent=2)
-    print dump
-    f.write(dump)
+    tree_params = {key: getattr(result, key, "blank") for key in params.keys()}
+    summary.append({"params": tree_params, "tree": result.summary})
+  dump = json.dumps(summary, indent=2)
+  f.write(dump)
   f.close()
 
 if __name__=="__main__":
