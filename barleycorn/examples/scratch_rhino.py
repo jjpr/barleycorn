@@ -37,9 +37,9 @@ def xTree(tk):
 
 def xTreeIter(tk):
   params = {
-    "fraction": [0.75, 0.95],
-    # "angle": [180, 120],
-    # "bend": [30, 45, 60]
+    "fraction": [0.6, 0.5],
+    "angle": [180, 120],
+    "bend": [30, 45, 60]
   }
   return barleycorn.util.iterate_and_stack(params, designs_rhino.Tree, 200)
 
@@ -65,8 +65,8 @@ if __name__=="__main__":
   # expt(xRS01)
   # expt(xRAll01)
   # expt(xTree)
-  # expt(xTreeIter)
-  xTreeSummary()
+  expt(xTreeIter)
+  # xTreeSummary()
   
   
   
