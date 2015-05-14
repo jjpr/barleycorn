@@ -37,15 +37,19 @@ def xTree(tk):
 
 def xTreeIter(tk):
   params = {
-    "fraction": [0.6, 0.5],
-    "angle": [180, 120],
-    "bend": [30, 45, 60]
+    "fraction": [0.7, 0.6, 0.5],
+    "base_radius": [2.0],
+    "terminal_radius": [0.5, 0.75],
+    "density": [4, 5]
   }
   return barleycorn.util.iterate_and_stack(params, designs_rhino.Tree, 200)
 
 def xTreeSummary():
   params = {
-    "fraction": [0.6, 0.5],
+    "fraction": [0.7, 0.6, 0.5],
+    "base_radius": [2.0],
+    "terminal_radius": [0.5, 0.75],
+    "density": [4, 5],
     "for_reals": [False]
   }
   f = open("tree_test_" + datetime.datetime.now().isoformat() + ".json", mode='w')
@@ -65,8 +69,8 @@ if __name__=="__main__":
   # expt(xRS01)
   # expt(xRAll01)
   # expt(xTree)
-  expt(xTreeIter)
-  # xTreeSummary()
+  # expt(xTreeIter)
+  xTreeSummary()
   
   
   
