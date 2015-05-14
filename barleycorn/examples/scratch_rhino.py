@@ -68,9 +68,9 @@ if __name__=="__main__":
 
   # expt(xRS01)
   # expt(xRAll01)
-  # expt(xTree)
+  expt(xTree)
   # expt(xTreeIter)
-  xTreeSummary()
+  # xTreeSummary()
   
   
   

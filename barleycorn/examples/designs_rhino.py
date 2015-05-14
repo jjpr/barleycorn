@@ -7,7 +7,7 @@ import rhinoscriptsyntax as rs
 import random
 
 class Tree(SpecialRhino):
-  def __init__(self, base_radius=4.0, terminal_radius=0.25, height=40.0, density=2, fraction=0.75, angle=180, bend=45,
+  def __init__(self, base_radius=2.0, terminal_radius=0.5, height=40.0, density=4, fraction=0.70, angle=180, bend=45,
                for_reals=True, **kwargs):
     self.base_radius = base_radius
     self.terminal_radius = terminal_radius
