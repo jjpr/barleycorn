@@ -7,7 +7,7 @@ import rhinoscriptsyntax as rs
 import random
 
 class Tree(SpecialRhino):
-  def __init__(self, base_radius=2.0, terminal_radius=0.5, height=40.0, density=4, fraction=0.70, angle=180, bend=45,
+  def __init__(self, base_radius=2.0, terminal_radius=0.5, height=20.0, density=4, fraction=0.70, angle=180, bend=45,
                for_reals=True, **kwargs):
     self.base_radius = base_radius
     self.terminal_radius = terminal_radius
@@ -96,8 +96,8 @@ class RockerTree01(barleycorn.Wrapper):
 
   def makeMe(self):
     base = designs.RockerCenter01(self.middle.clearance_radius_inner, self.middle.rim_radius_major, self.middle.wall_thickness)
-    tree = Tree()
-    return base.bU(tree)
+    tree = Tree().translateZ(-base.wall_thickness)
+    return barleycorn.compounds.Collection([base, tree])
 
 
 

@@ -8,6 +8,7 @@ sys.path.append('/Users/jjpr/Downloads/sourceforge/cgkit/light')
 
 from scratch import *
 import barleycorn.util
+import barleycorn.examples.designs as designs
 import barleycorn.examples.designs_rhino as designs_rhino
 import barleycorn.toolkits.toolkitRhino
 
@@ -63,14 +64,28 @@ def xTreeSummary():
   f.write(dump)
   f.close()
 
+def xRT01(tk):
+  stand = designs.RockerStand01()
+  middle = designs.RockerMiddle01(stand.clearance_radius_inner, stand.rim_radius_major, stand.wall_thickness)
+  center = designs_rhino.RockerTree01(middle)
+  return [center]
+
+def xRAll01(tk):
+  stand = designs.RockerStand01()
+  middle = designs.RockerMiddle01(stand.clearance_radius_inner, stand.rim_radius_major, stand.wall_thickness)
+  center = designs_rhino.RockerTree01(middle)
+  return [stand, middle, center]
+
+
 if __name__=="__main__":
   print __file__
 
   # expt(xRS01)
   # expt(xRAll01)
-  expt(xTree)
+  # expt(xTree)
   # expt(xTreeIter)
   # xTreeSummary()
-  
+  expt(xRT01)
+  # expt(xRAll01)
   
   
