@@ -78,6 +78,11 @@ class ForToolkitRhino(barleycorn.ForToolkit):
     self.guids += [rs.AddSphere(rs.WorldXYPlane(), self.component.radius)]
     return self
             
+  def resolveCollection(self):
+    for component in self.component.components:
+      self.guids += component.getForToolkit(self.toolkit).resolve().guids
+    return self
+
   def resolveBooleanUnion(self):
     first = self.component.first.getForToolkit(self.toolkit).resolve().guids
     second = self.component.second.getForToolkit(self.toolkit).resolve().guids

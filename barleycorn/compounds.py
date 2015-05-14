@@ -3,6 +3,11 @@ import barleycorn
 class Compound(barleycorn.Component):
   def __init__(self, **kwargs):
     barleycorn.Component.__init__(self, **kwargs)
+
+class Collection(Compound):
+  def __init__(self, components, **kwargs):
+    Compound.__init__(self, **kwargs)
+    self.components = components
   
 class Boolean(Compound):
   def __init__(self, first, second, **kwargs):
