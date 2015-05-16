@@ -9,8 +9,8 @@ import random
 from math import log, floor
 
 class Tree(SpecialRhino):
-  def __init__(self, base_radius=1.0, terminal_radius=0.5, base_height=20.0, density=4, radius_fraction=0.84,
-               height_fraction=0.70, minimum_wall_thickness=0.7, angle=180, bend=45, for_reals=True, **kwargs):
+  def __init__(self, base_radius=1.0, terminal_radius=0.5, base_height=10.0, density=4, radius_fraction=0.84,
+               height_fraction=0.90, minimum_wall_thickness=0.7, angle=180, bend=45, for_reals=True, **kwargs):
     self.base_radius = base_radius
     self.terminal_radius = terminal_radius
     self.base_height = base_height
@@ -45,7 +45,7 @@ class Tree(SpecialRhino):
       sub_height = height * self.height_fraction
       sub_angle_y = self.bend
       for i in range(self.density):
-        sub_angle_z = (i + random.random()) * (360 / self.density)
+        sub_angle_z = (i + (0.5 * random.random())) * (360 / self.density)
         sub, sub_summary = self.tree_gen(sub_radius, sub_height)
         if self.for_reals:
           sub = rs.RotateObjects(sub, (0,0,0), sub_angle_y, (0,1,0))

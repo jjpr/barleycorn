@@ -56,6 +56,12 @@ tree_iter_params_01 = {
     "density": [4, 5]
 }
 
+tree_iter_params_02 = {
+    "base_height": [15.0, 10.0, 7.5],
+    "height_fraction": [0.5, 0.75, 0.9],
+    "bend": [30, 45, 60]
+}
+
 def curry_params(func, params):
     def curried(tk):
         return func(params, tk)
@@ -85,9 +91,11 @@ if __name__=="__main__":
   print __file__
 
   # expt(curry_params(xTreeIterTest, tree_iter_params_single))
-  expt(curry_params(xTreeIter, tree_iter_params_single))
+  # expt(curry_params(xTreeIter, tree_iter_params_single))
   # expt(curry_params(xTreeIterTest, tree_iter_params_01))
   # expt(curry_params(xTreeIter, tree_iter_params_01))
+  # expt(curry_params(xTreeIterTest, tree_iter_params_02))
+  expt(curry_params(xTreeIter, tree_iter_params_02))
   # expt(xRT01)
   # expt(xRAll01)
   
