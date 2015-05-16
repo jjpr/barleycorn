@@ -23,7 +23,7 @@ def expt(func, export=False):
   '''
   stuff = func(_tk)
 
-  _tk.clean()
+  # _tk.clean()
   _tk.show(stuff)
   _tk.look()
   if export:
@@ -31,44 +31,48 @@ def expt(func, export=False):
     # _tk.exportSTL(stuff, _out_prefix)
   return stuff
 
-def xTree(tk):
-  tree = designs_rhino.Tree()
-  print tree
-  return [tree]
+def summarize_tree(tree, param_list):
+    tree.getForToolkit(_tk).resolve()
+    tree_params = {key: getattr(tree, key, "blank") for key in param_list}
+    return {"params": tree_params, "tree": tree.summary}
 
-def xTreeIter(tk):
-  params = {
-    "fraction": [0.7, 0.6, 0.5],
+def dated_file(prefix, extension):
+    return open(prefix + "_" + datetime.datetime.now().isoformat() + "." + extension, mode='w')
+
+def dump_json(jsonable, prefix):
+    dump = json.dumps(jsonable, indent=2)
+    f = dated_file(prefix, "json")
+    f.write(dump)
+    f.close()
+
+tree_iter_params_test = {"for_reals": [False]}
+
+tree_iter_params_single = {}
+
+tree_iter_params_01 = {
+    "radius_fraction": [0.7, 0.6, 0.5],
     "base_radius": [2.0],
     "terminal_radius": [0.5, 0.75],
     "density": [4, 5]
-  }
-  return barleycorn.util.iterate_and_stack(params, designs_rhino.Tree, 200)
+}
 
-def xTreeSummary():
-  params = {
-    "fraction": [0.7, 0.6, 0.5],
-    "base_radius": [2.0],
-    "terminal_radius": [0.5, 0.75],
-    "density": [4, 5],
-    "for_reals": [False]
-  }
-  f = open("tree_test_" + datetime.datetime.now().isoformat() + ".json", mode='w')
-  results = barleycorn.util.iterate_and_stack(params, designs_rhino.Tree, 200)
-  summary = []
-  for result in results:
-    result.getForToolkit(_tk).resolve()
-    tree_params = {key: getattr(result, key, "blank") for key in params.keys()}
-    summary.append({"params": tree_params, "tree": result.summary})
-  dump = json.dumps(summary, indent=2)
-  f.write(dump)
-  f.close()
+def curry_params(func, params):
+    def curried(tk):
+        return func(params, tk)
+    return curried
+
+def xTreeIter(params, tk):
+  trees = barleycorn.util.iterate_and_stack(params, designs_rhino.Tree, 200)
+  dump_json([summarize_tree(tree, params.keys()) for tree in trees], "tree_summary")
+  return trees
+
+def xTreeIterTest(params, tk):
+  params_test = dict(params, **tree_iter_params_test)
+  trees = xTreeIter(params_test, tk)
+  return trees
 
 def xRT01(tk):
-  stand = designs.RockerStand01()
-  middle = designs.RockerMiddle01(stand.clearance_radius_inner, stand.rim_radius_major, stand.wall_thickness)
-  center = designs_rhino.RockerTree01(middle)
-  return [center]
+  return xRAll01(tk)[-1]
 
 def xRAll01(tk):
   stand = designs.RockerStand01()
@@ -80,12 +84,11 @@ def xRAll01(tk):
 if __name__=="__main__":
   print __file__
 
-  # expt(xRS01)
-  # expt(xRAll01)
-  # expt(xTree)
-  # expt(xTreeIter)
-  # xTreeSummary()
-  expt(xRT01)
+  # expt(curry_params(xTreeIterTest, tree_iter_params_single))
+  expt(curry_params(xTreeIter, tree_iter_params_single))
+  # expt(curry_params(xTreeIterTest, tree_iter_params_01))
+  # expt(curry_params(xTreeIter, tree_iter_params_01))
+  # expt(xRT01)
   # expt(xRAll01)
   
   

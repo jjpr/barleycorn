@@ -5,11 +5,12 @@ import datetime
 
 class Toolkit(object):
   """a Toolkit represents a particular application or library for 3D modeling, CAD, etc."""
-  def __init__(self, name, forToolkitClass, supportedPrimitives=[], supportedOperations=[]):
+  def __init__(self, name, forToolkitClass, supportedPrimitives=[], supportedOperations=[], debug=False):
     self.name = name
     self.forToolkitClass = forToolkitClass
     self.supportedPrimitives = supportedPrimitives
     self.supportedOperations = supportedOperations
+    self.debug = debug
     
 class ForToolkit(object):
   """a ForToolkit object allows a Toolkit to store information and code 

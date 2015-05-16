@@ -4,18 +4,16 @@ import sys
 print datetime.datetime.now()
 
 print "sys.modules: " 
-print sys.modules.keys()
+for key in sys.modules.keys():
+    print key
 
 to_reload = [
-    "barleycorn",
-    "barleycorn.util",
-    "barleycorn.toolkits.toolkitRhino",
-    "barleycorn.examples.designs",
-    "barleycorn.examples.scratch",
     "barleycorn.examples.designs_rhino"
 ]
 
-for mod in to_reload:
-    if mod in sys.modules:
-        reload(sys.modules[mod])
-        print "reloaded " + mod
+for mod_name in to_reload:
+    if mod_name in sys.modules:
+        mod = sys.modules[mod_name]
+        if mod:
+            reload(mod)
+            print "reloaded " + mod_name

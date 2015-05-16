@@ -152,6 +152,7 @@ class ToolkitRhino(barleycorn.Toolkit):
 class SpecialRhino(barleycorn.primitives.Special):
   """a Rhino-specific implementation of primitives.Special"""
   def __init__(self, **kwargs):
+    self.tk = getToolkitRhino()
     barleycorn.primitives.Special.__init__(self, **kwargs)
 
   def geometry(self): #this is where the Rhino-specific code goes

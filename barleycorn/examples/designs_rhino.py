@@ -2,18 +2,22 @@ __author__ = 'jjpr'
 
 from barleycorn.toolkits.toolkitRhino import SpecialRhino
 import barleycorn
+import barleycorn.util
 import barleycorn.examples.designs as designs
 import rhinoscriptsyntax as rs
 import random
+from math import log, floor
 
 class Tree(SpecialRhino):
-  def __init__(self, base_radius=2.0, terminal_radius=0.5, height=20.0, density=4, fraction=0.70, angle=180, bend=45,
-               for_reals=True, **kwargs):
+  def __init__(self, base_radius=1.0, terminal_radius=0.5, base_height=20.0, density=4, radius_fraction=0.84,
+               height_fraction=0.70, minimum_wall_thickness=0.7, angle=180, bend=45, for_reals=True, **kwargs):
     self.base_radius = base_radius
     self.terminal_radius = terminal_radius
-    self.height = height
+    self.base_height = base_height
     self.density = density
-    self.fraction = fraction
+    self.radius_fraction = radius_fraction
+    self.height_fraction = height_fraction
+    self.minimum_wall_thickness = minimum_wall_thickness
     self.angle = angle
     self.leaf = None
     self.bend = bend
@@ -21,25 +25,24 @@ class Tree(SpecialRhino):
     SpecialRhino.__init__(self, **kwargs)
 
   def geometry(self):
-    result, summary = self.tree_gen(self.base_radius, self.height)
+    result, summary = self.tree_gen(self.base_radius, self.base_height)
     self.summary = summary
-    return result or [self.get_leaf(self.base_radius)]
+    return result or [self.get_leaf()]
 
   def tree_gen(self, radius, height):
     result = []
     summary = []
     if radius < self.terminal_radius:
-      sub_radius = radius * self.fraction
       if self.for_reals:
-        result.append(self.get_leaf(sub_radius))
-      summary.append("leaf " + str(sub_radius))
+        result.append(self.get_leaf())
+      summary.append("leaf")
     else:
       if self.for_reals:
         result.append(self.twig_gen(radius, radius, height))
       summary.append("twig " + str(radius) + " " + str(height))
       subs = []
-      sub_radius = radius * self.fraction
-      sub_height = height * self.fraction
+      sub_radius = radius * self.radius_fraction
+      sub_height = height * self.height_fraction
       sub_angle_y = self.bend
       for i in range(self.density):
         sub_angle_z = (i + random.random()) * (360 / self.density)
@@ -57,23 +60,22 @@ class Tree(SpecialRhino):
       summary.append(center_summary)
     return result, summary
 
-  def get_leaf(self, radius):
+  def get_leaf(self):
     if not self.leaf:
-      self.leaf = self.leaf_gen(1.0)
-    return rs.ScaleObject(self.leaf, (0.0, 0.0, 0.0), [radius]*3, True)
+      self.leaf = self.leaf_gen(self.terminal_radius, self.minimum_wall_thickness)
+    return rs.CopyObject(self.leaf)
 
-  def leaf_gen(self, radius):
-    radius_02 = 0.85 * radius
+  def leaf_gen(self, radius, thickness):
     edge_pts = [
       (0.0, radius, 0.0),
-      (0.0, radius_02, 2.0 * radius),
+      (0.0, radius, 2.0 * radius),
       (- radius * 1.5, radius * 3.0, radius * 5.0),
       (- radius * 1.5, radius * 3.0, radius * 8.0),
       (0.0, radius / 2.0, radius * 12.0),
       (radius, 0.0, radius * 13.0)
     ]
-    profile_pts_top = [[pt, (radius + pt[0], 0.0, pt[2]), (pt[0], -pt[1], pt[2])] for pt in edge_pts[:-1]]
-    profile_pts_bottom = [[(pt[0], -pt[1], pt[2]), (-radius + pt[0], 0.0, pt[2]), pt] for pt in edge_pts[:-1]]
+    profile_pts_top = [[pt, ((0.5 * thickness) + pt[0], 0.0, pt[2]), (pt[0], -pt[1], pt[2])] for pt in edge_pts[:-1]]
+    profile_pts_bottom = [[(pt[0], -pt[1], pt[2]), ((-0.5 * thickness) + pt[0], 0.0, pt[2]), pt] for pt in edge_pts[:-1]]
 
     crvs_top = [rs.AddCurve(pts) for pts in profile_pts_top]
     crvs_bottom = [rs.AddCurve(pts) for pts in profile_pts_bottom]
@@ -84,10 +86,18 @@ class Tree(SpecialRhino):
 
     cap = rs.AddPlanarSrf([profile_crvs[0]])
 
-    return rs.JoinSurfaces([srf, cap])
+    result = rs.JoinSurfaces([srf, cap])
+
+    return result
 
   def twig_gen(self, base_radius, top_radius, height):
     return rs.AddCylinder(rs.WorldXYPlane(), height, base_radius)
+
+  def branchings(self):
+    return floor(log(self.terminal_radius / self.base_radius, self.radius_fraction)) + 1
+
+  def enumerate_branchings(self, params):
+    return [dict(perm, branchings=self.branchings(**perm)) for perm in barleycorn.util.make_param_product(params)]
 
 class RockerTree01(barleycorn.Wrapper):
   def __init__(self, middle, **kwargs):
