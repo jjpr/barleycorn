@@ -62,13 +62,27 @@ tree_iter_params_02 = {
     "bend": [30, 45, 60]
 }
 
+tree_iter_params_03 = {
+    "base_height": [10.0],
+    "height_fraction": [0.5],
+    "bend": [45],
+    "density": [4, 3, 2]
+}
+
+tree_iter_params_04 = {
+    "base_height": [10.0],
+    "height_fraction": [0.5],
+    "bend": [45],
+    "density": [4]
+}
+
 def curry_params(func, params):
     def curried(tk):
         return func(params, tk)
     return curried
 
 def xTreeIter(params, tk):
-  trees = barleycorn.util.iterate_and_stack(params, designs_rhino.Tree, 200)
+  trees = barleycorn.util.iterate_and_stack(params, designs_rhino.Tree, 100)
   dump_json([summarize_tree(tree, params.keys()) for tree in trees], "tree_summary")
   return trees
 
@@ -95,7 +109,9 @@ if __name__=="__main__":
   # expt(curry_params(xTreeIterTest, tree_iter_params_01))
   # expt(curry_params(xTreeIter, tree_iter_params_01))
   # expt(curry_params(xTreeIterTest, tree_iter_params_02))
-  expt(curry_params(xTreeIter, tree_iter_params_02))
+  # expt(curry_params(xTreeIter, tree_iter_params_02))
+  # expt(curry_params(xTreeIter, tree_iter_params_03))
+  expt(curry_params(xTreeIter, tree_iter_params_04))
   # expt(xRT01)
   # expt(xRAll01)
   

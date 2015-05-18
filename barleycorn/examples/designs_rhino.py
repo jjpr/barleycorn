@@ -69,8 +69,8 @@ class Tree(SpecialRhino):
     edge_pts = [
       (0.0, radius, 0.0),
       (0.0, radius, 2.0 * radius),
-      (- radius * 1.5, radius * 3.0, radius * 5.0),
-      (- radius * 1.5, radius * 3.0, radius * 8.0),
+      (- radius * 1.5, radius * 2.0, radius * 5.0),
+      (- radius * 1.5, radius * 2.0, radius * 8.0),
       (0.0, radius / 2.0, radius * 12.0),
       (radius, 0.0, radius * 13.0)
     ]
