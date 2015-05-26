@@ -92,7 +92,7 @@ def xTreeIterTest(params, tk):
   return trees
 
 def xRT01(tk):
-  return xRAll01(tk)[-1]
+  return [xRAll01(tk)[-1]]
 
 def xRAll01(tk):
   stand = designs.RockerStand01()
@@ -111,8 +111,8 @@ if __name__=="__main__":
   # expt(curry_params(xTreeIterTest, tree_iter_params_02))
   # expt(curry_params(xTreeIter, tree_iter_params_02))
   # expt(curry_params(xTreeIter, tree_iter_params_03))
-  expt(curry_params(xTreeIter, tree_iter_params_04))
-  # expt(xRT01)
+  # expt(curry_params(xTreeIter, tree_iter_params_04))
+  expt(xRT01)
   # expt(xRAll01)
   
   
