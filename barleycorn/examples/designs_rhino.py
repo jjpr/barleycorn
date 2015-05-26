@@ -10,7 +10,7 @@ from math import log, floor
 
 class Tree(SpecialRhino):
   def __init__(self, base_radius=1.0, terminal_radius=0.5, base_height=12.0, density=5, radius_fraction=0.79,
-               height_fraction=0.75, minimum_wall_thickness=0.7, angle=180, bend=47, for_reals=True, **kwargs):
+               height_fraction=0.72, minimum_wall_thickness=0.7, angle=180, bend=51, for_reals=True, **kwargs):
     self.base_radius = base_radius
     self.terminal_radius = terminal_radius
     self.base_height = base_height

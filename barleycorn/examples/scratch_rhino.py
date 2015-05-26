@@ -112,7 +112,7 @@ if __name__=="__main__":
   # expt(curry_params(xTreeIter, tree_iter_params_02))
   # expt(curry_params(xTreeIter, tree_iter_params_03))
   # expt(curry_params(xTreeIter, tree_iter_params_04))
-  expt(xRT01)
-  # expt(xRAll01)
+  # expt(xRT01)
+  expt(xRAll01)
   
   
